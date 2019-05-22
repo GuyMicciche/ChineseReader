@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Chinese Reader</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_paste">Paste</string>
+    <string name="edit_message">Text to annotate:</string>
+    <string name="button_send">Annotate</string>
+
+</resources>

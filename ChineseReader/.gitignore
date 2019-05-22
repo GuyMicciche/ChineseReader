@@ -1,0 +1,8 @@
+other
+build
+.gradle
+.idea
+out
+assets/dict.db
+assets/idx.db
+ChineseReader-release.apk
