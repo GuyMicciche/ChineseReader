@@ -1,4 +1,4 @@
-name: Sync to Azure DevOps
+name: Sync to Azure DevOps old
 
 on:
   push:
