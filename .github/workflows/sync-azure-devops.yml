@@ -17,37 +17,35 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history
     
-    - name: Create Repository via REST API
+    - name: Setup Azure DevOps CLI
+      run: |
+        az extension add --name azure-devops --upgrade --yes
+    
+    - name: Create or Update Repository
       env:
-        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+        AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
       run: |
         # Get repository info from GitHub
         REPO_NAME="${{ github.event.repository.name }}"
         REPO_DESC="${{ github.event.repository.description }}"
         PROJECT="DefaultCollection"  # Change this to your project name if different
-        ORG="guymicciche"
         
-        # Check if repository exists using REST API
-        RESPONSE=$(curl -s -w "\n%{http_code}" \
-          -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
-          "https://dev.azure.com/$ORG/$PROJECT/_apis/git/repositories/$REPO_NAME?api-version=7.0")
+        # Set defaults organization and authenticate with PAT
+        az devops configure --defaults organization=https://dev.azure.com/guymicciche
         
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        # Login with PAT (required for authentication)
+        echo $AZURE_DEVOPS_EXT_PAT | az devops login --organization https://dev.azure.com/guymicciche
         
-        if [ "$HTTP_CODE" = "404" ]; then
+        # Check if repository exists
+        REPO_EXISTS=$(az repos show --repository "$REPO_NAME" --project "$PROJECT" 2>&1 || echo "not_found")
+        
+        if [[ "$REPO_EXISTS" == *"not_found"* ]] || [[ "$REPO_EXISTS" == *"was not found"* ]]; then
           echo "Creating repository: $REPO_NAME"
-          
-          # Create repository using REST API
-          curl -X POST \
-            -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
-            -H "Content-Type: application/json" \
-            -d "{\"name\": \"$REPO_NAME\", \"project\": {\"id\": \"$PROJECT\"}}" \
-            "https://dev.azure.com/$ORG/$PROJECT/_apis/git/repositories?api-version=7.0" \
-            || echo "Note: Repository might already exist or will be created on first push"
-          
-          echo "✅ Repository creation attempted: $REPO_NAME"
+          # Create repository (Azure CLI doesn't support description parameter)
+          az repos create --name "$REPO_NAME" --project "$PROJECT"
+          echo "✅ Repository created: $REPO_NAME"
         else
-          echo "Repository $REPO_NAME already exists or will be created on push"
+          echo "Repository $REPO_NAME already exists"
         fi
     
     - name: Sync to Azure DevOps
@@ -65,7 +63,7 @@ jobs:
         # Add Azure DevOps remote using the same repository name
         git remote add azure https://$AZURE_DEVOPS_PAT@dev.azure.com/guymicciche/$PROJECT/_git/$REPO_NAME
         
-        # Push to Azure DevOps (this will create the repo if it doesn't exist)
+        # Push to Azure DevOps
         git push azure --all --force
         git push azure --tags --force
         
