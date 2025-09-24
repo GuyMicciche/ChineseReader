@@ -27,7 +27,7 @@ jobs:
       run: |
         REPO_NAME="${{ github.event.repository.name }}"
         REPO_DESC="${{ github.event.repository.description }}"
-        PROJECT="MyProjectName"   # 👈 change this to your real project name
+        PROJECT="${{ github.event.repository.name }}"   # 👈 change this to your real project name
 
         # Configure organization (PAT comes from env automatically)
         az devops configure --defaults organization=https://dev.azure.com/guymicciche project=$PROJECT
