@@ -1,4 +1,4 @@
-name: Sync GitHub to Azure DevOps
+name: Sync to Azure DevOps
 
 on:
   push:
@@ -9,13 +9,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Sync to Azure DevOps
-        uses: GuyMicciche/SyncToAzureDevOps@v1.0.1
+      - name: Sync GitHub repo to Azure DevOps
+        uses: GuyMicciche/SyncToAzureDevOps@v1.0.0
         with:
-          # Only the org name, PAT comes from secrets
           organization: "https://dev.azure.com/guymicciche"
-        env:
-          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+          pat: ${{ secrets.AZURE_DEVOPS_PAT }}
