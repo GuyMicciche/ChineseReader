@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Sync GitHub repo to Azure DevOps
-        uses: GuyMicciche/SyncToAzureDevOps@v1.0.2
+        uses: GuyMicciche/SyncToAzureDevOps@v1.0.3
         with:
           organization: "https://dev.azure.com/guymicciche"
           pat: ${{ secrets.AZURE_DEVOPS_PAT }}
