@@ -38,12 +38,8 @@ jobs:
         
         if [[ "$REPO_EXISTS" == *"not_found"* ]] || [[ "$REPO_EXISTS" == *"was not found"* ]]; then
           echo "Creating repository: $REPO_NAME"
-          # Create repository with description if provided
-          if [ -n "$REPO_DESC" ]; then
-            az repos create --name "$REPO_NAME" --project "$PROJECT" --default-branch main
-          else
-            az repos create --name "$REPO_NAME" --project "$PROJECT" --default-branch main
-          fi
+          # Create repository (Azure CLI doesn't support description parameter)
+          az repos create --name "$REPO_NAME" --project "$PROJECT"
           echo "✅ Repository created: $REPO_NAME"
         else
           echo "Repository $REPO_NAME already exists"
