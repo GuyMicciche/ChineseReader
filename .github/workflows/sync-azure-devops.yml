@@ -14,5 +14,5 @@ jobs:
       - name: Sync GitHub repo to Azure DevOps
         uses: GuyMicciche/SyncToAzureDevOps@v1.0.0
         with:
-          organization: "https://dev.azure.com/guymicciche"
+          organization: "dev.azure.com/guymicciche"
           pat: ${{ secrets.AZURE_DEVOPS_PAT }}
