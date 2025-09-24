@@ -1,0 +1,71 @@
+name: Sync to Azure DevOps
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Manual trigger button
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history
+    
+    - name: Setup Azure DevOps CLI
+      run: |
+        az extension add --name azure-devops --upgrade --yes
+    
+    - name: Create or Update Repository
+      env:
+        AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+      run: |
+        # Get repository info from GitHub
+        REPO_NAME="${{ github.event.repository.name }}"
+        REPO_DESC="${{ github.event.repository.description }}"
+        PROJECT="DefaultCollection"  # Change this to your project name if different
+        
+        # Set defaults organization
+        az devops configure --defaults organization=https://dev.azure.com/guymicciche
+        
+        # Check if repository exists
+        REPO_EXISTS=$(az repos show --repository "$REPO_NAME" --project "$PROJECT" 2>&1 || echo "not_found")
+        
+        if [[ "$REPO_EXISTS" == *"not_found"* ]] || [[ "$REPO_EXISTS" == *"was not found"* ]]; then
+          echo "Creating repository: $REPO_NAME"
+          # Create repository with description if provided
+          if [ -n "$REPO_DESC" ]; then
+            az repos create --name "$REPO_NAME" --project "$PROJECT" --default-branch main
+          else
+            az repos create --name "$REPO_NAME" --project "$PROJECT" --default-branch main
+          fi
+          echo "✅ Repository created: $REPO_NAME"
+        else
+          echo "Repository $REPO_NAME already exists"
+        fi
+    
+    - name: Sync to Azure DevOps
+      env:
+        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+      run: |
+        # Get repository name from GitHub
+        REPO_NAME="${{ github.event.repository.name }}"
+        PROJECT="DefaultCollection"  # Change this to your project name if different
+        
+        # Configure git
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        
+        # Add Azure DevOps remote using the same repository name
+        git remote add azure https://$AZURE_DEVOPS_PAT@dev.azure.com/guymicciche/$PROJECT/_git/$REPO_NAME
+        
+        # Push to Azure DevOps
+        git push azure --all --force
+        git push azure --tags --force
+        
+        echo "✅ Synced $REPO_NAME to Azure DevOps"
