@@ -1,7 +1,0 @@
-            - name: Sync to Azure DevOps
-  # You may pin to the exact commit or the version.
-  # uses: GuyMicciche/SyncToAzureDevOps@bc67e1ccbc713050da149a8e09eeb8a2240fecdb
-  uses: GuyMicciche/SyncToAzureDevOps@v1.0.1
-  with:
-    # Azure DevOps URL & organization name (e.g., https://dev.azure.com/myorg)
-    organization: "https://dev.azure.com/guymicciche"
